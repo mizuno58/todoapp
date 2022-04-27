@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>TODO List</title>
+    <link rel="stylesheet" href="../../stylesheets/style.css" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+      integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    <style>
+      table {
+        margin-top: 20px;
+      }
+    </style>
+
+    <h1>To Do List</h1>
+    <div align="center" class="example-r">
+      <button id="create-button" class="btn btn-success">+新規登録</button>
+      <div style="margin: 20px"></div>
+      <div class="form-group col-md-5" id="create-form" style="display: none">
+        <form>
+          <label for="task">タスク名</label>
+          <input type="text" id="task" class="form-control" name="task" />
+          <label for="deadline">期限</label>
+          <input
+            type="date"
+            id="deadline"
+            class="form-control"
+            name="deadline"
+          />
+          <label for="category">カテゴリ</label>
+          <select id="category" class="form-control" name="category">
+            <option value="1">生活</option>
+            <option value="2">勉強</option>
+            <option value="3">仕事</option>
+            <option value="4">趣味</option>
+          </select>
+          <label for="status">ステータス</label>
+          <select class="form-control" id="status" name="status">
+            <option value="1">未実施</option>
+          </select>
+        </form>
+        <div style="margin: 20px"></div>
+        <button class="btn btn-secondary" id="display-none">キャンセル</button>
+        <button class="btn btn-primary" id="create-task">登録</button>
+      </div>
+
+      <ul class="col-md-7" id="task-list"></ul>
+
+      <div class="form-group col-md-5" id="update-form" style="display: none">
+        <form>
+          <input class="form-control" type="hidden" name="id" />
+          <label for="task">タスク名</label>
+          <input class="form-control" type="text" id="task" name="task" />
+          <label for="deadline">期限</label>
+          <input
+            class="form-control"
+            type="date"
+            id="deadline"
+            name="deadline"
+          />
+          <label for="category">カテゴリ</label>
+          <select class="form-control" id="category" name="category">
+            <option value="1">生活</option>
+            <option value="2">勉強</option>
+            <option value="3">仕事</option>
+            <option value="4">趣味</option>
+          </select>
+          <label for="status">ステータス</label>
+          <select class="form-control" id="status" name="status">
+            <option value="1">完了</option>
+            <option value="2">進行中</option>
+            <option value="3">未実施</option>
+          </select>
+        </form>
+        <div style="margin: 20px"></div>
+        <button class="btn btn-secondary" id="display-none2">キャンセル</button>
+        <button class="btn btn-primary" id="update-task">保存</button>
+      </div>
+    </div>
+
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+      integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+      crossorigin="anonymous"
+    ></script>
+
+    <script src="../../javascripts/index.js"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script>
+      // タスク一覧取得
+      $(async function () {
+        // 一覧取得APIを実行
+        const response = await httpGet(
+          "//" + window.location.host + "/api/tasks"
+        );
+
+        const list = response.map((item) => {
+          // 日付を 年月日に変換
+          const date = new Date(item.deadline);
+          const year = date.getFullYear();
+          const month = date.getMonth() + 1;
+          const day = date.getDate();
+
+          const deadline = year + "年" + month + "月" + day + "日";
+
+          let categoryClassName = "";
+          switch (item.category_id) {
+            case 1:
+              categoryClassName = "🟩";
+              break;
+            case 2:
+              categoryClassName = "🟥";
+              break;
+            case 3:
+              categoryClassName = "🟦";
+              break;
+            case 4:
+              categoryClassName = "🟨";
+              break;
+            default:
+            // なにもしない
+          }
+
+          let taskStatus = "";
+          switch (item.task_status) {
+            case 1:
+              taskStatus = "×";
+              break;
+            case 2:
+              taskStatus = "<";
+              break;
+            case 3:
+              taskStatus = "・";
+              break;
+            default:
+            // なにもしない
+          }
+
+          const today = new Date();
+          const tyear = today.getFullYear();
+          const tmonth = today.getMonth() + 1;
+          const tday = today.getDate();
+          const tdeadline = tyear + "年" + tmonth + "月" + tday + "日";
+
+          if (deadline == tdeadline && !(item.task_status == 1)) {
+            swal(
+              "未完タスクあり",
+              "今日までのタスクを完了させてください",
+              "warning"
+            );
+          }
+
+          // リストを表示
+          return `
+            <li id="list">
+              <span class="tsta">${taskStatus}</span>
+                <span class="taskname">${item.task_name}</span>
+                <span class="dead">${deadline}</span>
+                <span class="cate">${categoryClassName}</span>
+                <span><button id="update-button" class="btn btn-info" data-id=${item.id} >更新</button></span>
+                <span><button id="delete-button" class="btn btn-danger" data-id=${item.id} data-delete=${item.task_name}>削除</button></span>
+            </li>`;
+        });
+
+        // ul タグにリストを追加
+        $("ul#task-list").append(list);
+      });
+
+      // 削除ボタン押下時
+      $(document).on("click", "#delete-button", async function () {
+        const taskName = $(this).data("delete");
+
+        if (confirm("下記の内容を削除します")) {
+          const id = $(this).data("id");
+
+          // 削除 API を実行
+          const response = await httpDelete(
+            "//" + window.location.host + `/api/tasks/${id}`
+          );
+
+          // 画面をリロード
+          window.location.reload();
+        }
+      });
+
+      // 新規登録ボタン押下時
+      $("#create-button").on("click", function () {
+        $("#create-form").show();
+      });
+
+      // 更新ボタン押下時
+      $(document).on("click", "#update-button", async function () {
+        $("#update-form").show();
+        const id = $(this).data("id");
+        const response = await httpGet(
+          "//" + window.location.host + `/api/tasks/${id}`
+        );
+
+        // 日付を xxxx-xx-xxに変換
+        const date = new Date(response[0].deadline);
+        const year = date.getFullYear();
+        const month = ("0" + (date.getMonth() + 1)).slice(-2);
+        const day = ("0" + date.getDate()).slice(-2);
+        const deadlineVal = `${year}-${month}-${day}`;
+
+        // 初期値をセット
+        $("#update-form input[name=id]").val(response[0].id);
+        $("#update-form input[name=task]").val(response[0].task_name);
+        $("#update-form input[name=deadline]").val(deadlineVal);
+        $("#update-form select[name=category]").val(response[0].category_id);
+        $("#update-form select[name=status]").val(response[0].task_status);
+      });
+
+      // フォームを閉じたいとき
+      $("#display-none").on("click", function () {
+        $("#create-form").hide();
+        $("#update-form").hide();
+      });
+
+      $("#display-none2").on("click", function () {
+        $("#create-form").hide();
+        $("#update-form").hide();
+      });
+
+      // 登録ボタン押下時
+      $("#create-task").on("click", async function () {
+        // リクエストデータをフォームから取得
+        const requestData = {
+          taskName: $("#create-form input[name=task]").val(),
+          deadline: $("#create-form input[name=deadline]").val(),
+          category: $("#create-form select[name=category]").val(),
+          status: $("#create-form select[name=status]").val(),
+        };
+
+        // 新規登録 API を実行
+        const response = await httpPost(
+          "//" + window.location.host + "/api/tasks",
+          requestData
+        );
+
+        // 画面をリロード
+        window.location.reload();
+      });
+
+      // 保存ボタン押下時
+      $("#update-task").on("click", async function () {
+        const id = $("#update-form input[name=id]").val();
+
+        // リクエストデータをフォームから取得
+        const requestData = {
+          taskName: $("#update-form input[name=task]").val(),
+          deadline: $("#update-form input[name=deadline]").val(),
+          category: $("#update-form select[name=category]").val(),
+          status: $("#update-form select[name=status]").val(),
+        };
+
+        // 新規登録 API を実行
+        const response = await httpUpdate(
+          "//" + window.location.host + `/api/tasks/${id}`,
+          requestData
+        );
+
+        // 画面をリロード
+        window.location.reload();
+      });
+    </script>
+  </body>
+</html>

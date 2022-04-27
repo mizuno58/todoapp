@@ -1,0 +1,45 @@
+body {
+  padding: 50px;
+  font: "Mv Boli", "Lucida Grande", Helvetica, Arial, sans-serif;
+  margin: 0;
+  width: 100vw;
+  height: 100vh;
+  background-image: url("https://cdn.wallpapersafari.com/19/94/2O8dkH.jpg");
+  background-repeat: no-repeat;
+}
+
+a {
+  color: #00b7ff;
+}
+
+label {
+  color: azure;
+}
+
+h1 {
+  color: rgb(67, 122, 122);
+  font-family: "Mv Boli";
+  font-size: xx-large;
+  text-align: center;
+}
+
+li {
+  color: azure;
+  background-color: rgba(46, 48, 22, 0.5);
+  font-family: "Mv Boli";
+  font-size: x-large;
+  padding: 1em;
+  border: 3px solid #ccc;
+  border-radius: 3em 0.7em 2em 0.7em/0.7em 2em 0.7em 3em;
+  margin: 20px;
+}
+
+ul {
+  list-style-type: none;
+}
+
+.tsta {
+  color: rgb(252, 250, 250);
+  text-align: left;
+  float: left;
+}
